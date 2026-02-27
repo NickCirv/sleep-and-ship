@@ -4,37 +4,35 @@
 
 > Queue tasks at night. Wake up to deployed features.
 
-Every developer's dream: go to bed, and your code writes itself.
+[![npm version](https://img.shields.io/npm/v/sleep-and-ship?color=%23818CF8&label=npm)](https://www.npmjs.com/package/sleep-and-ship)
+[![license](https://img.shields.io/badge/license-MIT-blue)](LICENSE)
+[![GitHub stars](https://img.shields.io/github/stars/NickCirv/sleep-and-ship?style=flat)](https://github.com/NickCirv/sleep-and-ship/stargazers)
+
+## The Problem
+
+You have 10 tasks to build but only 8 hours of sleep to waste. You sit down at midnight to bang out "just one more feature" and wake up face-down on your keyboard with a half-finished PR and a cold coffee. What if Claude could work the night shift? Queue your tasks, go to bed, wake up to branches with working code.
 
 ## Quick Start
 
 ```bash
-# Add tasks before bed
+export ANTHROPIC_API_KEY=sk-ant-...
+
+# Queue tasks before bed
 npx sleep-and-ship add "Add dark mode to the dashboard" --repo ./my-project
 npx sleep-and-ship add "Fix the pagination bug on /users" --repo ./my-project
 npx sleep-and-ship add "Add CSV export to the reports page" --repo ./my-project
 
-# See your queue
-npx sleep-and-ship list
-
-# Install the overnight cron (runs at 2 AM)
+# Install the overnight cron (runs at 2 AM automatically)
 npx sleep-and-ship install-cron
 
-# Or run manually
-npx sleep-and-ship run
+# Check the queue before you sleep
+npx sleep-and-ship list
 
-# Check results in the morning
+# Wake up and read the report
 npx sleep-and-ship report
 ```
 
-## How It Works
-
-1. Queue tasks with natural language descriptions
-2. At 2 AM, Claude Code processes each task on a separate branch
-3. Tests run automatically — passing tasks get committed
-4. Wake up to a morning report of what shipped
-
-## The Morning Report
+## Example Output
 
 ```
 ╭──────────────────────────────────────────────╮
@@ -58,40 +56,49 @@ npx sleep-and-ship report
 ╰──────────────────────────────────────────────╯
 ```
 
-## Safety
+## Features
 
-- Every task runs on its own branch — never touches `main`
-- Tests must pass before committing (npm test or pytest)
-- Failed tasks are logged with error details and the branch is cleaned up
-- You review and merge — nothing ships without you
+- **Natural language task queuing** — describe what you want in plain English
+- **Isolated branches** — every task runs on its own branch, `main` is never touched
+- **Test-gated commits** — tasks only commit if `npm test` or `pytest` passes
+- **2 AM cron** — installs a crontab entry, runs while you sleep
+- **Morning report** — clean summary of what shipped and what failed
+- **Safe by default** — you still review and merge, nothing auto-deploys
 
-## Commands
+## How It Works
+
+1. Queue tasks with natural language descriptions before bed
+2. At 2 AM, Claude Code processes each task on a separate git branch
+3. Tests run automatically — passing tasks get committed, failing ones are logged
+4. Wake up to a morning report of what shipped overnight
+
+## Requirements
+
+- Node.js 18+
+- Claude Code CLI installed: `npm install -g @anthropic-ai/claude-code`
+- `ANTHROPIC_API_KEY` environment variable set
+- Git initialized in target repos
+
+**Commands**
 
 | Command | Description |
 |---|---|
 | `add <task> --repo <path>` | Queue a task for tonight |
 | `list` | Show pending tasks |
 | `list --all` | Show all tasks including completed |
-| `run` | Execute the queue (called by cron) |
+| `run` | Execute the queue manually |
 | `report` | Show last night's results |
 | `install-cron` | Add the 2 AM crontab entry |
 
-## Requirements
+Tasks stored at `~/.sleep-and-ship/queue.json`. Logs at `~/.sleep-and-ship/log.txt`.
 
-- Node.js 18+
-- Claude Code CLI installed (`npm install -g @anthropic-ai/claude-code`)
-- `ANTHROPIC_API_KEY` environment variable set
-- Git initialized in target repos
+## See Also
 
-## Queue Storage
-
-Tasks are stored at `~/.sleep-and-ship/queue.json`. Logs go to `~/.sleep-and-ship/log.txt`.
-
-## Related
-
-- [fix-it-felix](https://github.com/NickCirv/fix-it-felix) — Self-healing CI
-- [one-prompt-saas](https://github.com/NickCirv/one-prompt-saas) — Full app from one prompt
+- [one-prompt-saas](https://github.com/NickCirv/one-prompt-saas) — Full SaaS app from a single prompt
+- [zero-to-prod](https://github.com/NickCirv/zero-to-prod) — Go from idea to deployed in minutes
+- [fix-it-felix](https://github.com/NickCirv/fix-it-felix) — Self-healing CI that auto-fixes failed builds
+- [100x-dev](https://github.com/NickCirv/100x-dev) — AI-powered developer productivity toolkit
 
 ## License
 
-MIT — NickCirv
+MIT — [NickCirv](https://github.com/NickCirv)
