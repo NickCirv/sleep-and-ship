@@ -1,0 +1,30 @@
+{
+  "name": "sleep-and-ship",
+  "version": "1.0.0",
+  "description": "Queue tasks at night. Wake up to deployed features.",
+  "type": "module",
+  "bin": {
+    "sleep-and-ship": "./bin/sas.js"
+  },
+  "main": "./src/index.js",
+  "scripts": {
+    "start": "node bin/sas.js"
+  },
+  "dependencies": {
+    "chalk": "^5.3.0",
+    "commander": "^12.1.0",
+    "fs-extra": "^11.2.0"
+  },
+  "keywords": [
+    "claude",
+    "ai",
+    "automation",
+    "cron",
+    "developer-tools"
+  ],
+  "author": "NickCirv",
+  "license": "MIT",
+  "engines": {
+    "node": ">=18"
+  }
+}
