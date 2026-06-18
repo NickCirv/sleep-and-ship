@@ -1,38 +1,18 @@
-![Banner](banner.svg)
+![sleep-and-ship — queue coding tasks before bed, Claude works overnight, wake up to branches with working code](assets/banner.png)
 
-# sleep-and-ship
+<div align="center">
 
-> Queue tasks at night. Wake up to deployed features.
+**Queue natural-language tasks before bed. Claude Code runs them at 2 AM. Wake up to committed branches.**
 
-[![npm version](https://img.shields.io/npm/v/sleep-and-ship?color=%23818CF8&label=npm)](https://www.npmjs.com/package/sleep-and-ship)
-[![license](https://img.shields.io/badge/license-MIT-blue)](LICENSE)
-[![GitHub stars](https://img.shields.io/github/stars/NickCirv/sleep-and-ship?style=flat)](https://github.com/NickCirv/sleep-and-ship/stargazers)
+![license](https://img.shields.io/badge/license-MIT-blue?labelColor=0B0A09)
+![node](https://img.shields.io/badge/node-%3E%3D18-brightgreen?labelColor=0B0A09)
+![claude-code](https://img.shields.io/badge/requires-Claude%20Code-8B92F6?labelColor=0B0A09)
 
-## The Problem
+</div>
 
-You have 10 tasks to build but only 8 hours of sleep to waste. You sit down at midnight to bang out "just one more feature" and wake up face-down on your keyboard with a half-finished PR and a cold coffee. What if Claude could work the night shift? Queue your tasks, go to bed, wake up to branches with working code.
+---
 
-## Quick Start
-
-```bash
-export ANTHROPIC_API_KEY=sk-ant-...
-
-# Queue tasks before bed
-npx sleep-and-ship add "Add dark mode to the dashboard" --repo ./my-project
-npx sleep-and-ship add "Fix the pagination bug on /users" --repo ./my-project
-npx sleep-and-ship add "Add CSV export to the reports page" --repo ./my-project
-
-# Install the overnight cron (runs at 2 AM automatically)
-npx sleep-and-ship install-cron
-
-# Check the queue before you sleep
-npx sleep-and-ship list
-
-# Wake up and read the report
-npx sleep-and-ship report
-```
-
-## Example Output
+You queue tasks in plain English before bed. A cron job fires at 2 AM, hands each task to Claude Code on its own isolated branch, runs your test suite, and commits only if tests pass. In the morning, `sleep-and-ship report` shows you what shipped and what failed — you review, merge, and move on.
 
 ```
 ╭──────────────────────────────────────────────╮
@@ -56,49 +36,72 @@ npx sleep-and-ship report
 ╰──────────────────────────────────────────────╯
 ```
 
-## Features
-
-- **Natural language task queuing** — describe what you want in plain English
-- **Isolated branches** — every task runs on its own branch, `main` is never touched
-- **Test-gated commits** — tasks only commit if `npm test` or `pytest` passes
-- **2 AM cron** — installs a crontab entry, runs while you sleep
-- **Morning report** — clean summary of what shipped and what failed
-- **Safe by default** — you still review and merge, nothing auto-deploys
-
-## How It Works
-
-1. Queue tasks with natural language descriptions before bed
-2. At 2 AM, Claude Code processes each task on a separate git branch
-3. Tests run automatically — passing tasks get committed, failing ones are logged
-4. Wake up to a morning report of what shipped overnight
-
 ## Requirements
 
 - Node.js 18+
-- Claude Code CLI installed: `npm install -g @anthropic-ai/claude-code`
+- Claude Code CLI: `npm install -g @anthropic-ai/claude-code`
 - `ANTHROPIC_API_KEY` environment variable set
-- Git initialized in target repos
+- Git initialised in target repos
 
-**Commands**
+## Install
+
+No npm account needed — run straight from GitHub:
+
+```bash
+npx github:NickCirv/sleep-and-ship
+```
+
+## Usage
+
+```bash
+export ANTHROPIC_API_KEY=your-key-here
+
+# Queue tasks before bed
+npx github:NickCirv/sleep-and-ship add "Add dark mode to the dashboard" --repo ./my-project
+npx github:NickCirv/sleep-and-ship add "Fix the pagination bug on /users" --repo ./my-project
+npx github:NickCirv/sleep-and-ship add "Add CSV export to the reports page" --repo ./my-project
+
+# Install the 2 AM cron job
+npx github:NickCirv/sleep-and-ship install-cron
+
+# Check the queue before you sleep
+npx github:NickCirv/sleep-and-ship list
+
+# Wake up and read the report
+npx github:NickCirv/sleep-and-ship report
+```
+
+## Commands
 
 | Command | Description |
-|---|---|
-| `add <task> --repo <path>` | Queue a task for tonight |
+|---------|-------------|
+| `add <task> --repo <path>` | Queue a task for tonight (`--repo` defaults to cwd) |
 | `list` | Show pending tasks |
-| `list --all` | Show all tasks including completed |
-| `run` | Execute the queue manually |
+| `list --all` | Show all tasks including completed and failed |
+| `run` | Execute the queue manually (also called by cron) |
 | `report` | Show last night's results |
-| `install-cron` | Add the 2 AM crontab entry |
+| `install-cron` | Add the `0 2 * * *` crontab entry |
 
-Tasks stored at `~/.sleep-and-ship/queue.json`. Logs at `~/.sleep-and-ship/log.txt`.
+Tasks are stored at `~/.sleep-and-ship/queue.json`. Logs at `~/.sleep-and-ship/log.txt`.
 
-## See Also
+## How it works
 
-- [one-prompt-saas](https://github.com/NickCirv/one-prompt-saas) — Full SaaS app from a single prompt
-- [zero-to-prod](https://github.com/NickCirv/zero-to-prod) — Go from idea to deployed in minutes
-- [fix-it-felix](https://github.com/NickCirv/fix-it-felix) — Self-healing CI that auto-fixes failed builds
-- [100x-dev](https://github.com/NickCirv/100x-dev) — AI-powered developer productivity toolkit
+1. `add` writes tasks to `~/.sleep-and-ship/queue.json` with status `pending`
+2. At 2 AM, the cron entry fires `sleep-and-ship run`
+3. Claude Code processes each task on a dedicated branch (`sleep-and-ship/task-<timestamp>`)
+4. After Claude finishes, `npm test` or `pytest` runs — the commit only lands if tests pass
+5. Status is written back to the queue file; `report` reads it in the morning
 
-## License
+`main` is never touched. You review branches and merge what you want to keep.
 
-MIT — [NickCirv](https://github.com/NickCirv)
+## What it is NOT
+
+- **Not autonomous deployment.** Nothing pushes or merges without you — branches are created locally and you decide what ships.
+- **Not a task manager.** It queues coding tasks for Claude Code, not notes or reminders. Each task needs a target git repo.
+- **Not guaranteed to succeed.** Claude Code may fail on ambiguous tasks, missing context, or missing dependencies — `report` tells you exactly what happened.
+
+---
+
+<div align="center">
+<sub>Node 18+ · MIT · by <a href="https://github.com/NickCirv">NickCirv</a></sub>
+</div>
