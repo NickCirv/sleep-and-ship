@@ -1,107 +1,73 @@
-![sleep-and-ship — queue coding tasks before bed, Claude works overnight, wake up to branches with working code](assets/banner.png)
+![sleep-and-ship — Nicholas Ashkar editorial artwork](assets/nicholas-ashkar/banner.png)
 
-<div align="center">
+# sleep-and-ship
 
-**Queue natural-language tasks before bed. Claude Code runs them at 2 AM. Wake up to committed branches.**
+Queue coding tasks for a local Claude Code runner and inspect their recorded results.
 
-![license](https://img.shields.io/badge/license-MIT-blue?labelColor=0B0A09)
-![node](https://img.shields.io/badge/node-%3E%3D18-brightgreen?labelColor=0B0A09)
-![claude-code](https://img.shields.io/badge/requires-Claude%20Code-8B92F6?labelColor=0B0A09)
+Stores task state under `~/.sleep-and-ship`, creates task branches, invokes a coding assistant and attempts detected tests before committing changes.
 
-</div>
 
----
+<a id="install"></a>
 
-You queue tasks in plain English before bed. A cron job fires at 2 AM, hands each task to Claude Code on its own isolated branch, runs your test suite, and commits only if tests pass. In the morning, `sleep-and-ship report` shows you what shipped and what failed — you review, merge, and move on.
+## Quickstart
 
-```
-╭──────────────────────────────────────────────╮
-│         SLEEP & SHIP — Morning Report        │
-├──────────────────────────────────────────────┤
-│  Ran at:       2/27/2026, 2:01:03 AM         │
-│  Tasks ran:    5                             │
-│  Completed:    4 ✓                           │
-│  Failed:       1 ✗                           │
-├──────────────────────────────────────────────┤
-│  ✓ Add dark mode to the dashboard            │
-│    → sleep-and-ship/task-1740614400000       │
-│  ✓ Fix the pagination bug on /users          │
-│    → sleep-and-ship/task-1740614401000       │
-│  ✓ Add CSV export to the reports page        │
-│    → sleep-and-ship/task-1740614402000       │
-│  ✓ Update API docs                           │
-│    → sleep-and-ship/task-1740614403000       │
-│  ✗ Implement WebSocket notifications         │
-│    → Error: Missing ws dependency            │
-╰──────────────────────────────────────────────╯
-```
-
-## Requirements
-
-- Node.js 18+
-- Claude Code CLI: `npm install -g @anthropic-ai/claude-code`
-- `ANTHROPIC_API_KEY` environment variable set
-- Git initialised in target repos
-
-## Install
-
-No npm account needed — run straight from GitHub:
+Package runtime requirement: Node.js `>=20`. Git is needed to obtain this pinned source checkout.
 
 ```bash
-npx github:NickCirv/sleep-and-ship
+git clone https://github.com/NickCirv/sleep-and-ship.git
+cd sleep-and-ship
+git checkout 79bf0d4ab5ef572b283e6b82168b360729df2c98
+npm install --ignore-scripts
+node bin/sas.js --help
 ```
+
+This source-derived example has not been executed in this review. Help describes queue commands without running a coding task or installing a schedule.
+
+
+
+
+<a id="requirements"></a>
+
+<a id="commands"></a>
+
+<a id="how-it-works"></a>
 
 ## Usage
 
 ```bash
-export ANTHROPIC_API_KEY=your-key-here
-
-# Queue tasks before bed
-npx github:NickCirv/sleep-and-ship add "Add dark mode to the dashboard" --repo ./my-project
-npx github:NickCirv/sleep-and-ship add "Fix the pagination bug on /users" --repo ./my-project
-npx github:NickCirv/sleep-and-ship add "Add CSV export to the reports page" --repo ./my-project
-
-# Install the 2 AM cron job
-npx github:NickCirv/sleep-and-ship install-cron
-
-# Check the queue before you sleep
-npx github:NickCirv/sleep-and-ship list
-
-# Wake up and read the report
-npx github:NickCirv/sleep-and-ship report
+node bin/sas.js list --all
+node bin/sas.js report
+node bin/sas.js add "Add a focused unit test" --repo /path/to/disposable-repo
 ```
 
-## Commands
+`add` writes the queue. `run` processes pending tasks. `install-cron` writes a daily 2 AM crontab entry. Inspect queue contents before any execution.
 
-| Command | Description |
-|---------|-------------|
-| `add <task> --repo <path>` | Queue a task for tonight (`--repo` defaults to cwd) |
-| `list` | Show pending tasks |
-| `list --all` | Show all tasks including completed and failed |
-| `run` | Execute the queue manually (also called by cron) |
-| `report` | Show last night's results |
-| `install-cron` | Add the `0 2 * * *` crontab entry |
+[Command reference](docs/REFERENCE.md) covers arguments, modes and output controls.
 
-Tasks are stored at `~/.sleep-and-ship/queue.json`. Logs at `~/.sleep-and-ship/log.txt`.
 
-## How it works
+<a id="what-it-is-not"></a>
 
-1. `add` writes tasks to `~/.sleep-and-ship/queue.json` with status `pending`
-2. At 2 AM, the cron entry fires `sleep-and-ship run`
-3. Claude Code processes each task on a dedicated branch (`sleep-and-ship/task-<timestamp>`)
-4. After Claude finishes, `npm test` or `pytest` runs — the commit only lands if tests pass
-5. Status is written back to the queue file; `report` reads it in the morning
+## Behavior and limits
 
-`main` is never touched. You review branches and merge what you want to keep.
+The runner invokes Claude with `--dangerously-skip-permissions` and inherits the environment. It mutates the supplied checkout, stages all changes and commits with `--no-verify`; there is no clean-worktree preflight or isolated worktree. No detected test suite is treated as success. Failures may leave edits behind, and successive tasks can build on the current task branch. The implementation does not deploy features or publish PRs. Restrict experiments to disposable, credential-free repositories until these execution gaps are addressed.
 
-## What it is NOT
+## Development
 
-- **Not autonomous deployment.** Nothing pushes or merges without you — branches are created locally and you decide what ships.
-- **Not a task manager.** It queues coding tasks for Claude Code, not notes or reminders. Each task needs a target git repo.
-- **Not guaranteed to succeed.** Claude Code may fail on ambiguous tasks, missing context, or missing dependencies — `report` tells you exactly what happened.
+Declared package scripts:
 
----
+| Script | Command |
+| --- | --- |
+| `start` | `node bin/sas.js` |
+| `test` | `node --test` |
 
-<div align="center">
-<sub>Node 18+ · MIT · by <a href="https://github.com/NickCirv">NickCirv</a></sub>
-</div>
+The smoke test syntax-checks the entrypoint; it does not exercise CLI behavior or integrations.
+
+## Research
+
+[Source review and claim ledger](docs/RESEARCH.md) records revision `79bf0d4ab5ef`, inspected files and verification gaps.
+
+## License and attribution
+
+Protected license and attribution files remain unchanged: [LICENSE](https://github.com/NickCirv/sleep-and-ship/blob/79bf0d4ab5ef572b283e6b82168b360729df2c98/LICENSE).
+
+[Artwork credits](assets/nicholas-ashkar/CREDITS.md) · [Nicholas Ashkar — consulting](https://nicholashkar.com/#oxblood-contact)
